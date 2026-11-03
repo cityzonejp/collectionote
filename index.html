@@ -291,16 +291,38 @@ ${c.image?`<img src="${c.image}">`:'<div class="placeholder">CARD</div>'}
 </div>`;
 }
 function openCard(id) {
-let c=cards.find(x=>x.id===id);if(!c)return;
-document.getElementById('detailContent').innerHTML=`
-<div class="photo">${c.image?`<img src="${c.image}">`:'CARD'}</div>
-<h2>${esc(c.title)}</h2>
-<p>${esc(c.group)} / ${esc(c.member)}</p>
-<p class="small">${esc(c.type)}</p>
-<hr><p>${esc(c.detail||'詳細はありません')}</p>
-<button class="outline" onclick="toggleFav('${esc(c.member)}')">♡ お気に入りメンバー</button>
-<button class="primary" onclick="editCard('${c.id}')">✎ 編集</button>
-<button class="outline" onclick="deleteCard('${c.id}')">削除</button>`;
+const c = cards.find(x => x.id === id);
+if (!c) return;
+
+document.getElementById('detailContent').innerHTML = `
+<div class="photo">
+${c.image ? `<img src="${c.image}">` : 'CARD'}
+</div>
+
+<h2>${esc(c.title || '')}</h2>
+<p>${esc(c.group || '')} / ${esc(c.member || '')}</p>
+<p class="small">${esc(c.type || '')}</p>
+
+<hr>
+
+<p>${esc(c.detail || '詳細はありません')}</p>
+
+<button class="outline"
+onclick="toggleFav('${esc(c.member || '')}')">
+♡ お気に入りメンバー
+</button>
+
+<button class="primary"
+onclick="editCard('${c.id}')">
+✎ 編集
+</button>
+
+<button class="outline"
+onclick="deleteCard('${c.id}')">
+削除
+</button>
+`;
+
 show('detail');
 }
 function toggleFav(m) {
