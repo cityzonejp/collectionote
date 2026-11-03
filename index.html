@@ -114,6 +114,12 @@ hr {border:0;border-top:1px solid var(--line);margin:20px 0}
 </select>
 </div>
 <p class="small" id="count"></p>
+  <select id="sortOrder" onchange="renderCards()">
+<option value="new">新しい順</option>
+<option value="old">古い順</option>
+<option value="title">タイトル順</option>
+<option value="member">メンバー順</option>
+</select>
 <div id="cards" class="grid"></div>
 </section>
 
@@ -259,6 +265,21 @@ let gs=groupsList();
 document.getElementById('groupFilter').innerHTML='<option value="">すべてのグループ</option>'+gs.map(x=>`<option>${esc(x)}</option>`).join('');
 document.getElementById('groupFilter').value=g;
 let filtered=cards.filter(c=>(!g||c.group===g)&&(!t||c.type===t)&&(!q||[c.title,c.group,c.member,c.detail].join(' ').toLowerCase().includes(q)));
+const sort = document.getElementById('sortOrder').value;
+
+if (sort === 'new') {
+filtered.reverse();
+} else if (sort === 'old') {
+// 登録順
+} else if (sort === 'title') {
+filtered.sort((a,b) =>
+(a.title || '').localeCompare(b.title || '', 'ja')
+);
+} else if (sort === 'member') {
+filtered.sort((a,b) =>
+(a.member || '').localeCompare(b.member || '', 'ja')
+);
+}
 document.getElementById('count').textContent=filtered.length+' ITEMS';
 document.getElementById('cards').innerHTML=filtered.map(cardHTML).join('')||'<div class="empty">トレカが見つかりません</div>';
 }
