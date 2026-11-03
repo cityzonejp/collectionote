@@ -299,6 +299,7 @@ document.getElementById('detailContent').innerHTML=`
 <p class="small">${esc(c.type)}</p>
 <hr><p>${esc(c.detail||'詳細はありません')}</p>
 <button class="outline" onclick="toggleFav('${esc(c.member)}')">♡ お気に入りメンバー</button>
+<button class="primary" onclick="editCard('${c.id}')">✎ 編集</button>
 <button class="outline" onclick="deleteCard('${c.id}')">削除</button>`;
 show('detail');
 }
@@ -306,6 +307,40 @@ function toggleFav(m) {
 if(!m)return;
 favs=favs.includes(m)?favs.filter(x=>x!==m):[...favs,m];
 save();renderHome();alert('お気に入りを更新しました');
+}
+function editCard(id) {
+const c = cards.find(x => x.id === id);
+if (!c) return;
+
+const title = prompt('タイトル', c.title || '');
+if (title === null) return;
+
+const group = prompt('グループ', c.group || '');
+if (group === null) return;
+
+const member = prompt('メンバー', c.member || '');
+if (member === null) return;
+
+const type = prompt('種類（封入・特典・ラキドロ）', c.type || '封入');
+if (type === null) return;
+
+if (!['封入', '特典', 'ラキドロ'].includes(type.trim())) {
+alert('種類は封入・特典・ラキドロから選んでね');
+return;
+}
+
+const detail = prompt('詳細', c.detail || '');
+if (detail === null) return;
+
+c.title = title.trim();
+c.group = group.trim();
+c.member = member.trim();
+c.type = type.trim();
+c.detail = detail.trim();
+
+save();
+openCard(id);
+alert('トレカ情報を更新しました！');
 }
 function deleteCard(id) {
 if(confirm('このトレカを削除しますか？')) {
