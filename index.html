@@ -172,12 +172,35 @@ function groupsList() {
 return [...new Set(cards.map(c=>c.group).filter(Boolean))];
 }
 function renderHome() {
-document.getElementById('groups').innerHTML=groupsList().map(g=>
-`<button class="chip" onclick="filterGroup('${esc(g)}')">${esc(g)}</button>`).join('') || '<span class="small">登録したグループがここに表示されます</span>';
-let members=[...new Set(cards.filter(c=>favs.includes(c.member)).map(c=>c.member))];
-document.getElementById('favorites').innerHTML=members.map(m=>
-`<button class="chip" onclick="filterMember('${esc(m)}')">♡ ${esc(m)}</button>`).join('') || '<span class="small">お気に入りはまだありません</span>';
-document.getElementById('recent').innerHTML=cards.slice().reverse().slice(0,6).map(cardHTML).join('') || '<div class="empty">トレカを登録してみましょう ♡</div>';
+const groups = groupsList();
+
+document.getElementById('groups').innerHTML =
+groups.map(g => {
+const total = cards.filter(c => c.group === g).length;
+return `
+<button class="chip" onclick="filterGroup('${esc(g)}')">
+${esc(g)} · ${total}枚
+</button>`;
+}).join('') ||
+'<span class="small">グループを登録してください</span>';
+
+const members = [...new Set(cards.map(c => c.member).filter(Boolean))];
+
+document.getElementById('favorites').innerHTML =
+members.map(m => {
+const total = cards.filter(c => c.member === m).length;
+const isFav = favs.includes(m);
+return `
+<button class="chip ${isFav ? 'active' : ''}"
+onclick="toggleFav('${esc(m)}');renderHome()">
+${isFav ? '♥' : '♡'} ${esc(m)} · ${total}枚
+</button>`;
+}).join('') ||
+'<span class="small">メンバーを登録してください</span>';
+
+document.getElementById('recent').innerHTML =
+cards.slice().reverse().slice(0, 6).map(cardHTML).join('') ||
+'<div class="empty">トレカを登録してみましょう ♡</div>';
 }
 function filterGroup(g) {
 show('collection');document.getElementById('groupFilter').value=g;renderCards();
