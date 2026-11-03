@@ -97,6 +97,12 @@ hr {border:0;border-top:1px solid var(--line);margin:20px 0}
 </div>
 </section>
 
+<section id="members" class="hidden">
+<button class="outline back" onclick="show('home')">← HOME</button>
+<h2 id="memberGroupTitle">GROUP</h2>
+<p class="small">MEMBER COLLECTION</p>
+<div id="memberList" class="grid"></div>
+</section>  
 <section id="collection" class="hidden">
 <h2>COLLECTION</h2>
 <input id="search" placeholder="タイトル・メンバーで検索" oninput="renderCards()">
@@ -202,8 +208,45 @@ document.getElementById('recent').innerHTML =
 cards.slice().reverse().slice(0, 6).map(cardHTML).join('') ||
 '<div class="empty">トレカを登録してみましょう ♡</div>';
 }
+let selectedGroup = '';
+
 function filterGroup(g) {
-show('collection');document.getElementById('groupFilter').value=g;renderCards();
+selectedGroup = g;
+renderMembers();
+show('members');
+}
+
+function renderMembers() {
+document.getElementById('memberGroupTitle').textContent = selectedGroup;
+
+const members = [...new Set(
+cards.filter(c => c.group === selectedGroup)
+.map(c => c.member)
+.filter(Boolean)
+)];
+
+document.getElementById('memberList').innerHTML =
+members.map(m => {
+const total = cards.filter(
+c => c.group === selectedGroup && c.member === m
+).length;
+
+return `
+<div class="card" onclick="openMember('${esc(m)}')">
+<div class="placeholder">♡</div>
+<div class="card-title">${esc(m)}</div>
+<div class="card-sub">${total} CARDS</div>
+</div>
+`;
+}).join('') ||
+'<div class="empty">メンバーがいません</div>';
+}
+
+function openMember(member) {
+show('collection');
+document.getElementById('groupFilter').value = selectedGroup;
+document.getElementById('search').value = member;
+renderCards();
 }
 function filterMember(m) {
 show('collection');document.getElementById('search').value=m;renderCards();
