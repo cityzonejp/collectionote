@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARD NOTE</title>
+<style>
+:root {
+--bg:#faf9f6; --paper:#fff; --ink:#45413e;
+--muted:#a29b94; --line:#e9e5df; --accent:#b69b8b;
+}
+* {box-sizing:border-box}
+body {
+margin:0;background:var(--bg);color:var(--ink);
+font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+}
+header {
+padding:23px 20px 14px;background:var(--bg);
+position:sticky;top:0;z-index:3;
+}
+.logo {font-family:Georgia,serif;font-size:24px;letter-spacing:3px}
+.subtitle {font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:4px}
+main {padding:8px 18px 100px;max-width:650px;margin:auto}
+h2 {font-size:19px;font-weight:500;margin:16px 0}
+.small {font-size:12px;color:var(--muted)}
+input,select,textarea {
+width:100%;padding:13px;border:1px solid var(--line);
+border-radius:10px;background:white;font-size:14px;color:var(--ink);
+margin:6px 0 12px;
+}
+button {
+border:0;border-radius:20px;padding:11px 17px;
+background:#eee9e3;color:var(--ink);font-size:13px;
+}
+button.primary {background:#b69b8b;color:white}
+button.outline {background:white;border:1px solid var(--line)}
+.row {display:flex;gap:8px;align-items:center}
+.row>* {flex:1;min-width:0}
+.grid {
+display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;
+}
+.card {min-width:0;cursor:pointer}
+.card img,.placeholder {
+width:100%;aspect-ratio:3/4;object-fit:cover;
+border-radius:9px;background:#eeeae5;
+}
+.placeholder {display:grid;place-items:center;color:#b4aaa1;font-size:12px}
+.card-title {font-size:12px;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-sub {font-size:10px;color:var(--muted);margin-top:3px}
+.chips {display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.chip {border:1px solid var(--line);background:white;padding:8px 13px;border-radius:20px;font-size:12px}
+.chip.active {background:#b69b8b;color:white;border-color:#b69b8b}
+.section {margin:22px 0}
+.hidden {display:none!important}
+.bottom {
+position:fixed;bottom:0;left:0;right:0;background:#fff;
+border-top:1px solid var(--line);display:flex;justify-content:space-around;
+padding:10px 5px calc(10px + env(safe-area-inset-bottom));z-index:5;
+}
+.bottom button {background:none;border-radius:8px;padding:7px 12px;color:#918980;font-size:11px}
+.bottom button.active {color:#9b7967;font-weight:bold}
+.bottom span {display:block;font-size:19px;margin-bottom:3px}
+.photo {
+width:100%;aspect-ratio:3/4;background:#eeeae5;border-radius:12px;
+display:grid;place-items:center;overflow:hidden;color:#a29b94;
+}
+.photo img {width:100%;height:100%;object-fit:contain}
+label {font-size:12px;color:#766e67}
+.back {margin-bottom:15px}
+.empty {text-align:center;padding:45px 10px;color:var(--muted);font-size:13px}
+.favorite {color:#b47b7b}
+hr {border:0;border-top:1px solid var(--line);margin:20px 0}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">CARD NOTE</div>
+<div class="subtitle">YOUR COLLECTION, YOUR STORY.</div>
+</header>
+
+<main>
+<section id="home">
+<h2>HOME</h2>
+<p class="small">お気に入りのコレクションを見つけよう。</p>
+<div class="section">
+<h3>グループ</h3>
+<div id="groups" class="chips"></div>
+</div>
+<div class="section">
+<h3>お気に入りメンバー</h3>
+<div id="favorites" class="chips"></div>
+</div>
+<button class="primary" onclick="show('add')">＋ トレカを登録</button>
+<div class="section">
+<h3>最近の登録</h3>
+<div id="recent" class="grid"></div>
+</div>
+</section>
+
+<section id="collection" class="hidden">
+<h2>COLLECTION</h2>
+<input id="search" placeholder="タイトル・メンバーで検索" oninput="renderCards()">
+<div class="row">
+<select id="groupFilter" onchange="renderCards()"><option value="">すべてのグループ</option></select>
+<select id="typeFilter" onchange="renderCards()">
+<option value="">すべての種類</option>
+<option>封入</option><option>特典</option><option>ラキドロ</option>
+</select>
+</div>
+<p class="small" id="count"></p>
+<div id="cards" class="grid"></div>
+</section>
+
+<section id="add" class="hidden">
+<h2>REGISTER</h2>
+<p class="small">新しいコレクションを登録します。</p>
+<form id="cardForm">
+<label>画像</label>
+<input id="image" type="file" accept="image/*">
+<div class="photo" id="preview">画像を選択してください</div>
+<hr>
+<label>タイトル</label>
+<input id="title" placeholder="例：CRAVE YOU">
+<label>グループ</label>
+<input id="group" list="groupOptions" placeholder="例：&TEAM">
+<datalist id="groupOptions"></datalist>
+<label>メンバー</label>
+<input id="member" placeholder="例：FUMA">
+<label>種類</label>
+<div class="chips" id="typeChoices">
+<button type="button" class="chip active" data-type="封入">封入</button>
+<button type="button" class="chip" data-type="特典">特典</button>
+<button type="button" class="chip" data-type="ラキドロ">ラキドロ</button>
+</div>
+<label>詳細</label>
+<textarea id="detail" rows="3" placeholder="自由にメモできます"></textarea>
+<button class="primary" type="submit" style="width:100%">登録する</button>
+</form>
+</section>
+
+<section id="detail" class="hidden">
+<button class="outline back" onclick="show('collection')">← 戻る</button>
+<div id="detailContent"></div>
+</section>
+</main>
+
+<nav class="bottom">
+<button class="active" data-page="home" onclick="show('home')"><span>⌂</span>HOME</button>
+<button data-page="collection" onclick="show('collection')"><span>▦</span>COLLECTION</button>
+<button data-page="add" onclick="show('add')"><span>＋</span>REGISTER</button>
+</nav>
+
+<script>
+let cards = JSON.parse(localStorage.getItem('cardnote_cards') || '[]');
+let favs = JSON.parse(localStorage.getItem('cardnote_favs') || '[]');
+let selectedType = '封入';
+let selectedImage = '';
+
+function save() {
+localStorage.setItem('cardnote_cards',JSON.stringify(cards));
+localStorage.setItem('cardnote_favs',JSON.stringify(favs));
+}
+function show(page) {
+document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+document.getElementById(page).classList.remove('hidden');
+document.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+if(page==='home') renderHome();
+if(page==='collection') renderCards();
+window.scrollTo(0,0);
+}
+function groupsList() {
+return [...new Set(cards.map(c=>c.group).filter(Boolean))];
+}
+function renderHome() {
+document.getElementById('groups').innerHTML=groupsList().map(g=>
+`<button class="chip" onclick="filterGroup('${esc(g)}')">${esc(g)}</button>`).join('') || '<span class="small">登録したグループがここに表示されます</span>';
+let members=[...new Set(cards.filter(c=>favs.includes(c.member)).map(c=>c.member))];
+document.getElementById('favorites').innerHTML=members.map(m=>
+`<button class="chip" onclick="filterMember('${esc(m)}')">♡ ${esc(m)}</button>`).join('') || '<span class="small">お気に入りはまだありません</span>';
+document.getElementById('recent').innerHTML=cards.slice().reverse().slice(0,6).map(cardHTML).join('') || '<div class="empty">トレカを登録してみましょう ♡</div>';
+}
+function filterGroup(g) {
+show('collection');document.getElementById('groupFilter').value=g;renderCards();
+}
+function filterMember(m) {
+show('collection');document.getElementById('search').value=m;renderCards();
+}
+function renderCards() {
+let g=document.getElementById('groupFilter').value;
+let t=document.getElementById('typeFilter').value;
+let q=document.getElementById('search').value.toLowerCase();
+let gs=groupsList();
+document.getElementById('groupFilter').innerHTML='<option value="">すべてのグループ</option>'+gs.map(x=>`<option>${esc(x)}</option>`).join('');
+document.getElementById('groupFilter').value=g;
+let filtered=cards.filter(c=>(!g||c.group===g)&&(!t||c.type===t)&&(!q||[c.title,c.group,c.member,c.detail].join(' ').toLowerCase().includes(q)));
+document.getElementById('count').textContent=filtered.length+' ITEMS';
+document.getElementById('cards').innerHTML=filtered.map(cardHTML).join('')||'<div class="empty">トレカが見つかりません</div>';
+}
+function cardHTML(c) {
+return `<div class="card" onclick="openCard('${c.id}')">
+${c.image?`<img src="${c.image}">`:'<div class="placeholder">CARD</div>'}
+<div class="card-title">${esc(c.title||c.member||'Untitled')}</div>
+<div class="card-sub">${esc(c.group)} · ${esc(c.member)}</div>
+</div>`;
+}
+function openCard(id) {
+let c=cards.find(x=>x.id===id);if(!c)return;
+document.getElementById('detailContent').innerHTML=`
+<div class="photo">${c.image?`<img src="${c.image}">`:'CARD'}</div>
+<h2>${esc(c.title)}</h2>
+<p>${esc(c.group)} / ${esc(c.member)}</p>
+<p class="small">${esc(c.type)}</p>
+<hr><p>${esc(c.detail||'詳細はありません')}</p>
+<button class="outline" onclick="toggleFav('${esc(c.member)}')">♡ お気に入りメンバー</button>
+<button class="outline" onclick="deleteCard('${c.id}')">削除</button>`;
+show('detail');
+}
+function toggleFav(m) {
+if(!m)return;
+favs=favs.includes(m)?favs.filter(x=>x!==m):[...favs,m];
+save();renderHome();alert('お気に入りを更新しました');
+}
+function deleteCard(id) {
+if(confirm('このトレカを削除しますか？')) {
+cards=cards.filter(c=>c.id!==id);save();show('collection');
+}
+}
+function esc(s) {
+return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+document.getElementById('image').addEventListener('change',e=>{
+let file=e.target.files[0];if(!file)return;
+let reader=new FileReader();
+reader.onload=()=>{
+selectedImage=reader.result;
+document.getElementById('preview').innerHTML=`<img src="${selectedImage}">`;
+};
+reader.readAsDataURL(file);
+});
+document.querySelectorAll('#typeChoices button').forEach(b=>{
+b.addEventListener('click',()=>{
+selectedType=b.dataset.type;
+document.querySelectorAll('#typeChoices button').forEach(x=>x.classList.toggle('active',x===b));
+});
+});
+document.getElementById('cardForm').addEventListener('submit',e=>{
+e.preventDefault();
+let group=document.getElementById('group').value.trim();
+let member=document.getElementById('member').value.trim();
+if(!group||!member){alert('グループとメンバーを入力してください');return;}
+cards.push({
+id:Date.now().toString(),image:selectedImage,
+title:document.getElementById('title').value.trim(),
+group,member,type:selectedType,
+detail:document.getElementById('detail').value.trim()
+});
+save();e.target.reset();selectedImage='';
+document.getElementById('preview').textContent='画像を選択してください';
+show('collection');
+});
+renderHome();
+</script>
+</body>
+</html>
